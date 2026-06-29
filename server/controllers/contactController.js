@@ -18,14 +18,14 @@ exports.submitMessage = async (req, res) => {
     sendEmail(
       process.env.CONTACT_EMAIL || process.env.EMAIL_USER,
       `New Contact Message from ${name}`,
-      `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}\n\n---\nSent via TechBridge Africa contact form`
+      `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}\n\n---\nSent via NexGen Hire contact form`
     ).catch(err => console.log('[Contact email skipped]', err.message));
 
     // Auto-reply to sender
     sendEmail(
       email,
-      'Thanks for contacting TechBridge Africa',
-      `Hi ${name},\n\nThank you for reaching out! We received your message and will get back to you within 24-48 hours.\n\nBest regards,\nTechBridge Africa Team`
+      'Thanks for contacting NexGen Hire',
+      `Hi ${name},\n\nThank you for reaching out! We received your message and will get back to you within 24-48 hours.\n\nBest regards,\nNexGen Hire Team`
     ).catch(err => console.log('[Auto-reply skipped]', err.message));
 
     res.status(201).json({ message: 'Message sent successfully' });

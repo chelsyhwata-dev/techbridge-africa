@@ -109,7 +109,7 @@ exports.updateStatus = async (req, res) => {
       sendEmail(
         student[0].email,
         `Application Update - ${app[0].title}`,
-        `Hi ${student[0].name},\n\nYour application for "${app[0].title}" has been updated to: ${status.toUpperCase()}.\n\nLog in to TechBridge Africa to view details.\n\nBest,\nTechBridge Africa Team`
+        `Hi ${student[0].name},\n\nYour application for "${app[0].title}" has been updated to: ${status.toUpperCase()}.\n\nLog in to NexGen Hire to view details.\n\nBest,\nNexGen Hire Team`
       ).catch(err => console.error('Email notification failed:', err));
     }
 

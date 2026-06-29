@@ -28,11 +28,13 @@ export default function Navbar() {
     <nav className="bg-white/90 backdrop-blur-lg border-b border-navy-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-navy-900 rounded-lg flex items-center justify-center">
-              <span className="text-gold-500 font-bold text-lg">T</span>
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-navy-900 rounded-lg flex flex-col items-center justify-center leading-none">
+              <span className="text-white font-extrabold text-[11px] tracking-tight" style={{marginTop:'2px'}}>NX</span>
+              <div className="w-5 h-[1.5px] bg-gold-500 rounded-full" style={{margin:'1px 0'}}></div>
+              <span className="text-gold-500 text-[6px] font-medium tracking-[2px]">GEN</span>
             </div>
-            <span className="font-bold text-xl text-navy-900">TechBridge <span className="text-gold-500">Africa</span></span>
+            <span className="font-extrabold text-xl text-navy-900">NexGen <span className="font-light text-gold-500">Hire</span></span>
           </Link>
 
           <div className="hidden md:flex items-center gap-6">

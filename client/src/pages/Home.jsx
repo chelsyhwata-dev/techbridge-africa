@@ -29,7 +29,7 @@ export default function Home() {
               in Africa
             </h1>
             <p className="text-lg md:text-xl text-navy-200 mt-6 max-w-2xl">
-              TechBridge Africa connects students and graduates with internships, learnerships, and graduate programmes using AI-powered skill matching.
+              NexGen Hire connects students and graduates with internships, learnerships, and graduate programmes using AI-powered skill matching.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
               <Link to={ctaLink} className="btn-gold text-lg px-8 py-3.5 flex items-center justify-center gap-2">
@@ -155,7 +155,7 @@ export default function Home() {
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h2 className="text-3xl md:text-4xl font-bold text-navy-900 mb-4">Ready to Bridge the Gap?</h2>
-        <p className="text-navy-400 mb-8 max-w-xl mx-auto">Join thousands of African tech students, graduates, and companies already using TechBridge Africa.</p>
+        <p className="text-navy-400 mb-8 max-w-xl mx-auto">Join thousands of African tech students, graduates, and companies already using NexGen Hire.</p>
         <Link to="/register" className="btn-gold text-lg px-8 py-3.5 inline-flex items-center gap-2">
           Create Free Account <ArrowRight size={20} />
         </Link>

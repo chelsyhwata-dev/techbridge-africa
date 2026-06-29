@@ -231,7 +231,7 @@ export default function AdminPanel() {
             </div>
             <div>
               <label className="block text-sm font-medium text-navy-700 mb-1">Account Holder</label>
-              <input value={banking.accountHolder} onChange={(e) => setBanking({ ...banking, accountHolder: e.target.value })} className="input-field" placeholder="e.g. TechBridge Africa (Pty) Ltd" />
+              <input value={banking.accountHolder} onChange={(e) => setBanking({ ...banking, accountHolder: e.target.value })} className="input-field" placeholder="e.g. NexGen Hire (Pty) Ltd" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>

@@ -4,7 +4,7 @@ export default function About() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold text-navy-900 mb-4">About TechBridge Africa</h1>
+        <h1 className="text-4xl font-bold text-navy-900 mb-4">About NexGen Hire</h1>
         <p className="text-lg text-navy-400 max-w-2xl mx-auto">
           We're building the bridge between Africa's brightest tech students and the companies shaping the continent's digital future.
         </p>
@@ -28,7 +28,7 @@ export default function About() {
       <div className="card bg-navy-900 text-white text-center border-none">
         <h2 className="text-2xl font-bold mb-2">Built for Africa, by Africa</h2>
         <p className="text-navy-200">
-          With 230 million projected digital jobs by 2030, Africa's tech future is now. TechBridge Africa is here to make sure every student gets their shot.
+          With 230 million projected digital jobs by 2030, Africa's tech future is now. NexGen Hire is here to make sure every student gets their shot.
         </p>
       </div>
     </div>

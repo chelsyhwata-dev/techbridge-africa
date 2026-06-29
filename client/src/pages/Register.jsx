@@ -15,7 +15,7 @@ export default function Register() {
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-navy-900">Join TechBridge Africa</h1>
+          <h1 className="text-3xl font-bold text-navy-900">Join NexGen Hire</h1>
           <p className="text-navy-400 mt-2">Start your journey to a tech career</p>
         </div>
         <div className="card">

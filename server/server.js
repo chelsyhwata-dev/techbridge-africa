@@ -36,4 +36,4 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`TechBridge Africa running on port ${PORT}`));
+app.listen(PORT, () => console.log(`NexGen Hire running on port ${PORT}`));
