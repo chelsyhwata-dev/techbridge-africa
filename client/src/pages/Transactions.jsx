@@ -181,8 +181,44 @@ function CardPaymentForm({ plan, pricing, onSuccess, onBack }) {
     return digits;
   };
 
+  const luhnCheck = (num) => {
+    const digits = num.replace(/\s/g, '');
+    if (!/^\d{13,19}$/.test(digits)) return false;
+    let sum = 0, alt = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let n = parseInt(digits[i], 10);
+      if (alt) { n *= 2; if (n > 9) n -= 9; }
+      sum += n;
+      alt = !alt;
+    }
+    return sum % 10 === 0;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!form.cardName.trim() || form.cardName.trim().length < 2) {
+      toast.error('Enter a valid cardholder name');
+      return;
+    }
+    if (!luhnCheck(form.cardNumber)) {
+      toast.error('Invalid card number. Please check and try again.');
+      return;
+    }
+    const expiryMatch = form.expiryDate.match(/^(\d{2})\/(\d{2})$/);
+    if (!expiryMatch) {
+      toast.error('Enter expiry as MM/YY');
+      return;
+    }
+    const expMonth = parseInt(expiryMatch[1], 10);
+    const expYear = parseInt('20' + expiryMatch[2], 10);
+    if (expMonth < 1 || expMonth > 12 || new Date(expYear, expMonth) <= new Date()) {
+      toast.error('Card has expired or expiry date is invalid');
+      return;
+    }
+    if (!/^\d{3,4}$/.test(form.cvv)) {
+      toast.error('CVV must be 3 or 4 digits');
+      return;
+    }
     setShowConfirm(true);
   };
 
