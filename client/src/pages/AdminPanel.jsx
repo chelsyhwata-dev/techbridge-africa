@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Briefcase, DollarSign, FileText, Trash2, Download, Mail, Eye } from 'lucide-react';
+import { Users, Briefcase, DollarSign, FileText, Trash2, Download, Mail, Eye, Building2, Save } from 'lucide-react';
 import api from '../api/axios';
 import { formatDate, getStatusColor } from '../utils/helpers';
 import toast from 'react-hot-toast';
@@ -11,6 +11,8 @@ export default function AdminPanel() {
   const [jobs, setJobs] = useState([]);
   const [transactions, setTransactions] = useState({ transactions: [], totalRevenue: 0 });
   const [messages, setMessages] = useState({ messages: [], unread: 0 });
+  const [banking, setBanking] = useState({ bankName: '', accountHolder: '', accountNumber: '', branchCode: '', accountType: 'Savings', paymentInstructions: '' });
+  const [savingBank, setSavingBank] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +24,9 @@ export default function AdminPanel() {
     if (tab === 'jobs') api.get('/admin/jobs').then((res) => setJobs(res.data));
     if (tab === 'transactions') api.get('/admin/transactions').then((res) => setTransactions(res.data));
     if (tab === 'messages') api.get('/contact').then((res) => setMessages(res.data));
+    if (tab === 'banking') api.get('/settings/banking').then((res) => {
+      setBanking({ bankName: res.data.bank_name || '', accountHolder: res.data.account_holder || '', accountNumber: res.data.account_number || '', branchCode: res.data.branch_code || '', accountType: res.data.account_type || 'Savings', paymentInstructions: res.data.payment_instructions || '' });
+    });
   }, [tab]);
 
   const deleteUser = async (id) => {
@@ -50,6 +55,7 @@ export default function AdminPanel() {
     { key: 'jobs', label: 'Jobs' },
     { key: 'transactions', label: 'Revenue' },
     { key: 'messages', label: `Messages${messages.unread ? ` (${messages.unread})` : ''}` },
+    { key: 'banking', label: 'Banking' },
   ];
 
   return (
@@ -198,6 +204,61 @@ export default function AdminPanel() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {tab === 'banking' && (
+        <div className="card max-w-xl">
+          <div className="flex items-center gap-3 mb-6">
+            <Building2 className="text-gold-600" size={24} />
+            <div>
+              <h3 className="font-semibold text-navy-900">Platform Banking Details</h3>
+              <p className="text-sm text-navy-400">Companies will see these details when choosing EFT payment</p>
+            </div>
+          </div>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setSavingBank(true);
+            try {
+              await api.put('/settings/banking', banking);
+              toast.success('Banking details saved');
+            } catch { toast.error('Failed to save'); }
+            finally { setSavingBank(false); }
+          }} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-1">Bank Name</label>
+              <input value={banking.bankName} onChange={(e) => setBanking({ ...banking, bankName: e.target.value })} className="input-field" placeholder="e.g. FNB, Standard Bank, Capitec" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-1">Account Holder</label>
+              <input value={banking.accountHolder} onChange={(e) => setBanking({ ...banking, accountHolder: e.target.value })} className="input-field" placeholder="e.g. TechBridge Africa (Pty) Ltd" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">Account Number</label>
+                <input value={banking.accountNumber} onChange={(e) => setBanking({ ...banking, accountNumber: e.target.value })} className="input-field" placeholder="e.g. 62000000000" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-navy-700 mb-1">Branch Code</label>
+                <input value={banking.branchCode} onChange={(e) => setBanking({ ...banking, branchCode: e.target.value })} className="input-field" placeholder="e.g. 250655" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-1">Account Type</label>
+              <select value={banking.accountType} onChange={(e) => setBanking({ ...banking, accountType: e.target.value })} className="input-field">
+                <option>Savings</option>
+                <option>Cheque</option>
+                <option>Current</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-navy-700 mb-1">Payment Instructions</label>
+              <textarea value={banking.paymentInstructions} onChange={(e) => setBanking({ ...banking, paymentInstructions: e.target.value })} className="input-field h-24 resize-none" placeholder="Instructions shown to companies..." />
+            </div>
+            <button type="submit" disabled={savingBank} className="btn-gold w-full flex items-center justify-center gap-2">
+              <Save size={18} /> {savingBank ? 'Saving...' : 'Save Banking Details'}
+            </button>
+          </form>
         </div>
       )}
     </div>

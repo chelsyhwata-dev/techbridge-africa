@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Download, DollarSign, CreditCard, Star, Zap, Crown, CheckCircle, Lock, ShieldCheck } from 'lucide-react';
+import { Download, DollarSign, CreditCard, Star, Zap, Crown, CheckCircle, Lock, ShieldCheck, Building2, Copy, Check } from 'lucide-react';
 import api from '../api/axios';
 import { formatDate, getStatusColor } from '../utils/helpers';
 import Button from '../components/common/Button';
@@ -113,7 +113,7 @@ export default function Transactions() {
         {!selectedPlan ? (
           <PlanSelector pricing={pricing} onSelect={setSelectedPlan} />
         ) : (
-          <CardPaymentForm
+          <PaymentOptions
             plan={selectedPlan}
             pricing={pricing}
             onSuccess={() => {
@@ -159,6 +159,114 @@ function PlanSelector({ pricing, onSelect }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+function PaymentOptions({ plan, pricing, onSuccess, onBack }) {
+  const [method, setMethod] = useState('card');
+
+  return (
+    <div>
+      {/* Payment method tabs */}
+      <div className="flex gap-2 mb-6">
+        <button onClick={() => setMethod('card')}
+          className={`flex-1 py-2.5 rounded-xl font-medium border-2 transition-colors flex items-center justify-center gap-2 ${method === 'card' ? 'border-navy-800 bg-navy-50 text-navy-900' : 'border-gray-200 text-gray-400'}`}>
+          <CreditCard size={18} /> Card Payment
+        </button>
+        <button onClick={() => setMethod('eft')}
+          className={`flex-1 py-2.5 rounded-xl font-medium border-2 transition-colors flex items-center justify-center gap-2 ${method === 'eft' ? 'border-navy-800 bg-navy-50 text-navy-900' : 'border-gray-200 text-gray-400'}`}>
+          <Building2 size={18} /> EFT / Bank Transfer
+        </button>
+      </div>
+
+      {method === 'card' ? (
+        <CardPaymentForm plan={plan} pricing={pricing} onSuccess={onSuccess} onBack={onBack} />
+      ) : (
+        <EFTPayment plan={plan} pricing={pricing} onBack={onBack} />
+      )}
+    </div>
+  );
+}
+
+function EFTPayment({ plan, pricing, onBack }) {
+  const planData = pricing[plan];
+  const [bankInfo, setBankInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState('');
+
+  useEffect(() => {
+    api.get('/settings/banking/public')
+      .then(res => setBankInfo(res.data))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const copyText = (text, label) => {
+    navigator.clipboard.writeText(text);
+    setCopied(label);
+    setTimeout(() => setCopied(''), 2000);
+  };
+
+  const Icon = PLAN_ICONS[plan] || DollarSign;
+
+  if (loading) return <div className="animate-pulse h-40" />;
+
+  if (!bankInfo?.configured) {
+    return (
+      <div className="text-center py-6">
+        <Building2 className="mx-auto text-navy-300 mb-3" size={40} />
+        <p className="text-navy-400">EFT payment is not yet configured.</p>
+        <p className="text-sm text-navy-300 mt-1">Please use card payment or contact the platform admin.</p>
+        <button onClick={onBack} className="text-sm text-navy-400 hover:text-navy-600 mt-4">&larr; Back to plans</button>
+      </div>
+    );
+  }
+
+  const details = [
+    { label: 'Bank', value: bankInfo.bank_name },
+    { label: 'Account Holder', value: bankInfo.account_holder },
+    { label: 'Account Number', value: bankInfo.account_number },
+    { label: 'Branch Code', value: bankInfo.branch_code },
+    { label: 'Account Type', value: bankInfo.account_type },
+    { label: 'Amount', value: `R${planData.amount}` },
+    { label: 'Reference', value: planData.label },
+  ];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between bg-navy-50 rounded-xl p-4 mb-6">
+        <div className="flex items-center gap-3">
+          <Icon className="text-gold-600" size={20} />
+          <span className="font-medium text-navy-900">{planData.label}</span>
+        </div>
+        <span className="text-xl font-bold text-navy-900">R{planData.amount}</span>
+      </div>
+
+      <div className="space-y-3">
+        {details.map(d => (
+          <div key={d.label} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+            <span className="text-sm text-navy-400">{d.label}</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-navy-900">{d.value}</span>
+              <button onClick={() => copyText(d.value, d.label)} className="text-navy-300 hover:text-navy-600">
+                {copied === d.label ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {bankInfo.payment_instructions && (
+        <div className="bg-gold-50 rounded-xl p-4 mt-4 text-sm text-navy-700">
+          <p className="font-medium mb-1">Payment Instructions:</p>
+          <p>{bankInfo.payment_instructions}</p>
+        </div>
+      )}
+
+      <p className="text-xs text-navy-300 text-center mt-4">After making the EFT payment, your listing will be upgraded within 24 hours once payment is verified.</p>
+
+      <button onClick={onBack} className="w-full text-center text-sm text-navy-400 hover:text-navy-600 mt-4">&larr; Choose a different plan</button>
     </div>
   );
 }
