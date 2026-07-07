@@ -88,6 +88,9 @@ exports.getById = async (req, res) => {
       [req.params.id]
     );
     if (rows.length === 0) return res.status(404).json({ message: 'Job not found' });
+
+    pool.query('INSERT INTO job_views (job_id, viewer_user_id) VALUES (?, ?)', [req.params.id, req.user ? req.user.id : null]).catch(() => {});
+
     res.json(rows[0]);
   } catch (err) {
     console.error('Get job error:', err);

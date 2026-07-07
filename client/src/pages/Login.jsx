@@ -6,7 +6,8 @@ import { useEffect } from 'react';
 function getRedirect(role) {
   if (role === 'admin') return '/admin';
   if (role === 'company') return '/company/dashboard';
-  return '/ai-matches';
+  if (role === 'university') return '/university/dashboard';
+  return '/student/dashboard';
 }
 
 export default function Login() {

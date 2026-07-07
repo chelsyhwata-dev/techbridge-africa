@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { Menu, X, Briefcase, User, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, Briefcase, User, LogOut, LayoutDashboard, MessageSquare, Users } from 'lucide-react';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -16,13 +17,17 @@ export default function Navbar() {
 
   const navLinks = [
     { to: '/jobs', label: 'Jobs', icon: Briefcase },
+    { to: '/community/events', label: 'Community' },
     { to: '/about', label: 'About' },
     { to: '/contact', label: 'Contact' },
   ];
 
-  const dashboardLink = user?.role === 'student' ? '/ai-matches'
+  const dashboardLink = user?.role === 'student' ? '/student/dashboard'
     : user?.role === 'company' ? '/company/dashboard'
+    : user?.role === 'university' ? '/university/dashboard'
     : user?.role === 'admin' ? '/admin' : null;
+
+  const profileLink = user?.role === 'company' ? '/company/profile' : user?.role === 'university' ? '/university/dashboard' : '/student/profile';
 
   return (
     <nav className="bg-white/90 backdrop-blur-lg border-b border-navy-100 sticky top-0 z-50">
@@ -50,7 +55,16 @@ export default function Navbar() {
                     <LayoutDashboard size={18} /> Dashboard
                   </Link>
                 )}
-                <Link to={user.role === 'company' ? '/company/profile' : '/student/profile'} className="text-navy-700 hover:text-gold-600 font-medium flex items-center gap-1">
+                {user.role === 'company' && (
+                  <Link to="/company/candidates" className="text-navy-700 hover:text-gold-600 font-medium flex items-center gap-1">
+                    <Users size={18} /> Candidates
+                  </Link>
+                )}
+                <Link to="/messages" className="text-navy-700 hover:text-gold-600 font-medium flex items-center gap-1">
+                  <MessageSquare size={18} />
+                </Link>
+                <NotificationBell />
+                <Link to={profileLink} className="text-navy-700 hover:text-gold-600 font-medium flex items-center gap-1">
                   <User size={18} /> Profile
                 </Link>
                 <button onClick={handleLogout} className="text-navy-400 hover:text-red-600 flex items-center gap-1 font-medium">
@@ -84,6 +98,17 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                 )}
+                {user.role === 'company' && (
+                  <Link to="/company/candidates" onClick={() => setOpen(false)} className="block px-3 py-2 text-navy-700 hover:bg-navy-50 rounded-lg font-medium">
+                    Candidates
+                  </Link>
+                )}
+                <Link to="/messages" onClick={() => setOpen(false)} className="block px-3 py-2 text-navy-700 hover:bg-navy-50 rounded-lg font-medium">
+                  Messages
+                </Link>
+                <Link to={profileLink} onClick={() => setOpen(false)} className="block px-3 py-2 text-navy-700 hover:bg-navy-50 rounded-lg font-medium">
+                  Profile
+                </Link>
                 <button onClick={handleLogout} className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium">
                   Logout
                 </button>

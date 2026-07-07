@@ -1,25 +1,35 @@
 const pool = require('../config/db');
 const { sendEmail } = require('../utils/email');
+const { explainMatch } = require('../ai/matchEngine');
+const { awardBadge } = require('../utils/badges');
+const { notify } = require('../utils/notify');
 
 exports.apply = async (req, res) => {
   const { jobId, coverLetter } = req.body;
 
   try {
-    const [student] = await pool.query('SELECT id FROM students WHERE user_id = ?', [req.user.id]);
+    const [student] = await pool.query('SELECT id, skills FROM students WHERE user_id = ?', [req.user.id]);
     if (student.length === 0) return res.status(404).json({ message: 'Student profile not found' });
 
     const [job] = await pool.query(
-      'SELECT j.title, j.status, c.company_name, u.email as company_email FROM jobs j JOIN companies c ON j.company_id = c.id JOIN users u ON c.user_id = u.id WHERE j.id = ?',
+      'SELECT j.title, j.status, j.required_skills, c.company_name, u.email as company_email FROM jobs j JOIN companies c ON j.company_id = c.id JOIN users u ON c.user_id = u.id WHERE j.id = ?',
       [jobId]
     );
     if (job.length === 0) return res.status(404).json({ message: 'Job not found' });
     if (job[0].status !== 'open') return res.status(400).json({ message: 'Job is no longer accepting applications' });
 
+    let studentSkills = student[0].skills;
+    if (typeof studentSkills === 'string') studentSkills = JSON.parse(studentSkills);
+    let requiredSkills = job[0].required_skills;
+    if (typeof requiredSkills === 'string') requiredSkills = JSON.parse(requiredSkills);
+    const { score: matchScore } = explainMatch(studentSkills || [], requiredSkills || []);
+
     await pool.query(
-      'INSERT INTO applications (student_id, job_id, cover_letter) VALUES (?, ?, ?)',
-      [student[0].id, jobId, coverLetter]
+      'INSERT INTO applications (student_id, job_id, cover_letter, match_score) VALUES (?, ?, ?, ?)',
+      [student[0].id, jobId, coverLetter, matchScore]
     );
 
+    await awardBadge(req.user.id, 'first_application');
     res.status(201).json({ message: 'Application submitted' });
   } catch (err) {
     if (err.code === 'ER_DUP_ENTRY') {
@@ -61,14 +71,14 @@ exports.getJobApplicants = async (req, res) => {
     if (job.length === 0) return res.status(403).json({ message: 'Not authorized' });
 
     const [applicants] = await pool.query(
-      `SELECT a.id, a.status, a.cover_letter, a.applied_at,
+      `SELECT a.id, a.status, a.cover_letter, a.applied_at, a.match_score,
               u.name, u.email, u.profile_image,
-              s.university, s.year_of_study, s.location, s.skills, s.cv_path, s.bio
+              s.id as student_id, s.university, s.year_of_study, s.location, s.skills, s.cv_path, s.bio
        FROM applications a
        JOIN students s ON a.student_id = s.id
        JOIN users u ON s.user_id = u.id
        WHERE a.job_id = ?
-       ORDER BY a.applied_at DESC`,
+       ORDER BY a.match_score DESC, a.applied_at DESC`,
       [req.params.jobId]
     );
 
@@ -81,7 +91,7 @@ exports.getJobApplicants = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
   const { status } = req.body;
-  const validStatuses = ['pending', 'reviewed', 'shortlisted', 'rejected', 'accepted'];
+  const validStatuses = ['pending', 'reviewed', 'shortlisted', 'interview', 'offer', 'rejected', 'accepted', 'hired'];
   if (!validStatuses.includes(status)) {
     return res.status(400).json({ message: 'Invalid status' });
   }
@@ -100,9 +110,8 @@ exports.updateStatus = async (req, res) => {
 
     await pool.query('UPDATE applications SET status = ? WHERE id = ?', [status, req.params.id]);
 
-    // Send email notification
     const [student] = await pool.query(
-      'SELECT u.email, u.name FROM students s JOIN users u ON s.user_id = u.id WHERE s.id = ?',
+      'SELECT s.user_id, u.email, u.name FROM students s JOIN users u ON s.user_id = u.id WHERE s.id = ?',
       [app[0].student_id]
     );
     if (student.length > 0) {
@@ -111,6 +120,10 @@ exports.updateStatus = async (req, res) => {
         `Application Update - ${app[0].title}`,
         `Hi ${student[0].name},\n\nYour application for "${app[0].title}" has been updated to: ${status.toUpperCase()}.\n\nLog in to NexGen Hire to view details.\n\nBest,\nNexGen Hire Team`
       ).catch(err => console.error('Email notification failed:', err));
+
+      await notify(student[0].user_id, 'application_status', `Your application for "${app[0].title}" is now ${status.replace('_', ' ')}.`, '/applications');
+      if (status === 'interview') await awardBadge(student[0].user_id, 'first_interview');
+      if (status === 'offer' || status === 'hired') await awardBadge(student[0].user_id, 'first_offer');
     }
 
     res.json({ message: 'Application status updated' });

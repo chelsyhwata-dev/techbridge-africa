@@ -14,5 +14,7 @@ router.get('/jobs', adminController.getAllJobs);
 router.delete('/jobs/:id', adminController.deleteJob);
 router.get('/transactions', adminController.getAllTransactions);
 router.get('/transactions/export', adminController.exportAllTransactionsCSV);
+router.get('/fraud-scan', adminController.getFraudScan);
+router.patch('/companies/:id/verify', adminController.verifyCompany);
 
 module.exports = router;

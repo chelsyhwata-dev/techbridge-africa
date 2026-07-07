@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Plus, Users, Eye, Trash2 } from 'lucide-react';
+import { Plus, Users, Eye, Trash2, Sparkles } from 'lucide-react';
 import api from '../../api/axios';
 import { formatDate, getStatusColor } from '../../utils/helpers';
 import Button from '../common/Button';
@@ -34,6 +34,7 @@ export default function CompanyDashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Company Dashboard</h1>
         <div className="flex gap-3">
+          <Link to="/company/analytics" className="btn-secondary text-sm py-2 px-4">Analytics</Link>
           <Link to="/company/transactions" className="btn-secondary text-sm py-2 px-4">Transactions</Link>
           <Button onClick={() => setShowCreate(true)} className="flex items-center gap-2">
             <Plus size={18} /> Post Job
@@ -83,6 +84,22 @@ function CreateJobModal({ isOpen, onClose, onCreated }) {
   });
   const [skillInput, setSkillInput] = useState('');
   const [saving, setSaving] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [generating, setGenerating] = useState(false);
+
+  const generateWithAI = async () => {
+    if (!aiPrompt.trim()) return toast.error('Describe the role first, e.g. "Need a React intern, knows JS, remote"');
+    setGenerating(true);
+    try {
+      const res = await api.post('/ai/job-description', { prompt: aiPrompt, type: form.type });
+      setForm({ ...form, title: res.data.title, description: res.data.description, requiredSkills: res.data.requiredSkills });
+      toast.success('Draft generated — review and edit before posting');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to generate');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const addSkill = () => {
     const s = skillInput.trim();
@@ -112,6 +129,13 @@ function CreateJobModal({ isOpen, onClose, onCreated }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Post a New Job">
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="bg-navy-50 rounded-xl p-4">
+          <label className="block text-sm font-medium text-navy-800 mb-1 flex items-center gap-1"><Sparkles size={14} className="text-gold-500" /> AI Job Description Generator</label>
+          <div className="flex gap-2">
+            <input value={aiPrompt} onChange={(e) => setAiPrompt(e.target.value)} className="input-field flex-1" placeholder='e.g. "Need a React intern, knows JS, remote"' />
+            <Button type="button" onClick={generateWithAI} disabled={generating} variant="gold" className="text-sm py-2 px-4 whitespace-nowrap">{generating ? 'Writing...' : 'Generate'}</Button>
+          </div>
+        </div>
         <Input label="Job Title" value={form.title} onChange={set('title')} required />
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>

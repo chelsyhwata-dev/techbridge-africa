@@ -20,6 +20,20 @@ app.use('/api/admin', require('./routes/admin'));
 app.use('/api/contact', require('./routes/contact'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/skills', require('./routes/skills'));
+app.use('/api/projects', require('./routes/projects'));
+app.use('/api/career', require('./routes/career'));
+app.use('/api/ai', require('./routes/ai'));
+app.use('/api/recruiter', require('./routes/recruiter'));
+app.use('/api/assessments', require('./routes/assessments'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/interviews', require('./routes/interviews'));
+app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/university', require('./routes/university'));
+app.use('/api/events', require('./routes/events'));
+app.use('/api/qa', require('./routes/qa'));
+app.use('/api/referrals', require('./routes/referrals'));
+app.use('/api/badges', require('./routes/badges'));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 

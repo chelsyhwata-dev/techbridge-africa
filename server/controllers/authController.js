@@ -9,7 +9,7 @@ function generateToken(user) {
 }
 
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, referralCode } = req.body;
 
   try {
     const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const userRole = ['student', 'company'].includes(role) ? role : 'student';
+    const userRole = ['student', 'company', 'university'].includes(role) ? role : 'student';
 
     const [result] = await pool.query(
       'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
@@ -32,6 +32,16 @@ exports.register = async (req, res) => {
     } else if (userRole === 'company') {
       const companyName = req.body.companyName || name;
       await pool.query('INSERT INTO companies (user_id, company_name) VALUES (?, ?)', [userId, companyName]);
+    } else if (userRole === 'university') {
+      const universityName = req.body.universityName || name;
+      await pool.query('INSERT INTO universities (user_id, university_name) VALUES (?, ?)', [userId, universityName]);
+    }
+
+    if (referralCode) {
+      const [referral] = await pool.query('SELECT referrer_user_id FROM referrals WHERE code = ? LIMIT 1', [referralCode]);
+      if (referral.length > 0 && referral[0].referrer_user_id !== userId) {
+        await pool.query('INSERT INTO referrals (referrer_user_id, code, referred_user_id) VALUES (?, ?, ?)', [referral[0].referrer_user_id, referralCode, userId]);
+      }
     }
 
     const token = generateToken({ id: userId, role: userRole });
@@ -90,6 +100,9 @@ exports.getMe = async (req, res) => {
       profile = rows[0] || null;
     } else if (user.role === 'company') {
       const [rows] = await pool.query('SELECT * FROM companies WHERE user_id = ?', [user.id]);
+      profile = rows[0] || null;
+    } else if (user.role === 'university') {
+      const [rows] = await pool.query('SELECT * FROM universities WHERE user_id = ?', [user.id]);
       profile = rows[0] || null;
     }
 

@@ -1,20 +1,30 @@
 const pool = require('../config/db');
 
 function calculateMatchScore(studentSkills, jobSkills) {
-  if (!studentSkills.length || !jobSkills.length) return 0;
+  return explainMatch(studentSkills, jobSkills).score;
+}
+
+// Explainable match (PRD 7.5): always shows *why* a score is what it is,
+// not just the percentage — matched skills, missing skills.
+function explainMatch(studentSkills, jobSkills) {
+  if (!studentSkills.length || !jobSkills.length) return { score: 0, matched: [], missing: jobSkills || [] };
 
   const normalize = (s) => s.toLowerCase().trim();
   const studentSet = studentSkills.map(normalize);
-  const jobSet = jobSkills.map(normalize);
 
-  let matchCount = 0;
-  for (const skill of jobSet) {
-    if (studentSet.some(s => s === skill || s.includes(skill) || skill.includes(s))) {
-      matchCount++;
+  const matched = [];
+  const missing = [];
+  for (const skill of jobSkills) {
+    const norm = normalize(skill);
+    if (studentSet.some((s) => s === norm || s.includes(norm) || norm.includes(s))) {
+      matched.push(skill);
+    } else {
+      missing.push(skill);
     }
   }
 
-  return Math.round((matchCount / jobSet.length) * 100);
+  const score = Math.round((matched.length / jobSkills.length) * 100);
+  return { score, matched, missing };
 }
 
 const STATUS_JOB_TYPES = {
@@ -50,13 +60,15 @@ async function getMatchedJobs(req, res) {
         let requiredSkills = job.required_skills;
         if (typeof requiredSkills === 'string') requiredSkills = JSON.parse(requiredSkills);
 
-        const matchScore = calculateMatchScore(studentSkills, requiredSkills);
+        const { score: matchScore, matched, missing } = explainMatch(studentSkills, requiredSkills);
         const locationMatch = student[0].location &&
           job.location && job.location.toLowerCase().includes(student[0].location.toLowerCase());
 
         return {
           ...job,
           matchScore,
+          matchedSkills: matched,
+          missingSkills: missing,
           locationMatch,
           overallScore: matchScore + (locationMatch ? 5 : 0),
         };
@@ -76,4 +88,4 @@ async function getMatchedJobs(req, res) {
   }
 }
 
-module.exports = { getMatchedJobs, calculateMatchScore };
+module.exports = { getMatchedJobs, calculateMatchScore, explainMatch };

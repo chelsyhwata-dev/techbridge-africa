@@ -8,7 +8,7 @@ export default function Register() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user) navigate(user.role === 'company' ? '/company/profile' : '/student/profile');
+    if (user) navigate(user.role === 'company' ? '/company/profile' : user.role === 'university' ? '/university/dashboard' : '/student/profile');
   }, [user, navigate]);
 
   return (

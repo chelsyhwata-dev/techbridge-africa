@@ -1,4 +1,26 @@
 const pool = require('../config/db');
+const { runFraudScan } = require('../ai/fraudDetection');
+
+exports.getFraudScan = async (req, res) => {
+  try {
+    const result = await runFraudScan();
+    res.json(result);
+  } catch (err) {
+    console.error('Fraud scan error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.verifyCompany = async (req, res) => {
+  try {
+    const [result] = await pool.query('UPDATE companies SET verified = TRUE WHERE id = ?', [req.params.id]);
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'Company not found' });
+    res.json({ message: 'Company verified' });
+  } catch (err) {
+    console.error('Verify company error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 
 exports.getDashboardStats = async (req, res) => {
   try {

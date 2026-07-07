@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Briefcase, DollarSign, FileText, Trash2, Download, Mail, Eye, Building2, Save } from 'lucide-react';
+import { Users, Briefcase, DollarSign, FileText, Trash2, Download, Mail, Eye, Building2, Save, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios';
 import { formatDate, getStatusColor } from '../utils/helpers';
 import toast from 'react-hot-toast';
@@ -13,6 +13,7 @@ export default function AdminPanel() {
   const [messages, setMessages] = useState({ messages: [], unread: 0 });
   const [banking, setBanking] = useState({ bankName: '', accountHolder: '', accountNumber: '', branchCode: '', accountType: 'Savings', paymentInstructions: '' });
   const [savingBank, setSavingBank] = useState(false);
+  const [fraudScan, setFraudScan] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export default function AdminPanel() {
     if (tab === 'jobs') api.get('/admin/jobs').then((res) => setJobs(res.data));
     if (tab === 'transactions') api.get('/admin/transactions').then((res) => setTransactions(res.data));
     if (tab === 'messages') api.get('/contact').then((res) => setMessages(res.data));
+    if (tab === 'trust') api.get('/admin/fraud-scan').then((res) => setFraudScan(res.data));
     if (tab === 'banking') api.get('/settings/banking').then((res) => {
       setBanking({ bankName: res.data.bank_name || '', accountHolder: res.data.account_holder || '', accountNumber: res.data.account_number || '', branchCode: res.data.branch_code || '', accountType: res.data.account_type || 'Savings', paymentInstructions: res.data.payment_instructions || '' });
     });
@@ -55,6 +57,7 @@ export default function AdminPanel() {
     { key: 'jobs', label: 'Jobs' },
     { key: 'transactions', label: 'Revenue' },
     { key: 'messages', label: `Messages${messages.unread ? ` (${messages.unread})` : ''}` },
+    { key: 'trust', label: 'Trust & Safety' },
     { key: 'banking', label: 'Banking' },
   ];
 
@@ -202,6 +205,29 @@ export default function AdminPanel() {
                   </button>
                 </div>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === 'trust' && (
+        <div className="space-y-3">
+          <div className="card flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ShieldAlert className="text-amber-600" size={22} />
+              <div>
+                <p className="font-semibold text-navy-900">AI Fraud Detection Scan</p>
+                <p className="text-sm text-gray-500">{fraudScan ? `${fraudScan.totalFlags} flag(s) found` : 'Loading...'}</p>
+              </div>
+            </div>
+            <button onClick={() => api.get('/admin/fraud-scan').then((res) => setFraudScan(res.data))} className="btn-secondary text-sm py-2 px-4">Rescan</button>
+          </div>
+          {fraudScan?.flags.length === 0 ? (
+            <div className="card text-center text-emerald-600 flex items-center justify-center gap-2 py-8"><CheckCircle2 size={18} /> No fraud signals detected</div>
+          ) : fraudScan?.flags.map((f, i) => (
+            <div key={i} className="card border-l-4 border-l-amber-500">
+              <p className="text-sm font-medium text-navy-900">{f.type.replace(/_/g, ' ')}</p>
+              <p className="text-sm text-gray-600">{f.detail}</p>
             </div>
           ))}
         </div>
