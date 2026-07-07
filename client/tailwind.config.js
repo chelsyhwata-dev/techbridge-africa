@@ -4,10 +4,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: { 50: '#e8edf4', 100: '#c5d0e0', 200: '#9eafca', 300: '#7790b4', 400: '#5a79a4', 500: '#3d6294', 600: '#2d4a73', 700: '#1e3352', 800: '#152742', 900: '#0D1B2A' },
-        gold: { 50: '#fff9e6', 100: '#ffedb3', 200: '#ffe180', 300: '#ffd54d', 400: '#ffca28', 500: '#F9A825', 600: '#e09520', 700: '#c7821b', 800: '#a86e17', 900: '#8a5a12' },
-        dark: '#1A1A2E',
-        softwhite: '#F5F7FA',
+        navy: { 50: '#F5F3FF', 100: '#EDE9FE', 200: '#DDD6FE', 300: '#C4B5FD', 400: '#A78BFA', 500: '#8B5CF6', 600: '#7C3AED', 700: '#6D28D9', 800: '#5B21B6', 900: '#4C1D95' },
+        gold: { 50: '#FDF2F8', 100: '#FCE7F3', 200: '#FBCFE8', 300: '#F9A8D4', 400: '#F472B6', 500: '#EC4899', 600: '#DB2777', 700: '#BE185D', 800: '#9D174D', 900: '#831843' },
+        dark: '#2A1454',
+        softwhite: '#FDF4FF',
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
